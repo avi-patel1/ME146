@@ -1,0 +1,114 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{minted}
+\usepackage{amsmath}
+\usepackage{biblatex}
+
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+\addbibresource{ME146.bib}
+
+
+\title{Novel Approach to Lithium Extraction using a String}
+\author{Avi Patel}
+\date{March 13, 2024}
+
+\begin{document}
+
+\maketitle
+
+\section*{Introduction}
+
+The extraction of Li is important for electric vehicles, consumer electronics and other energy storage devices. The global demand for Li has seen a rapid increase and determining a sustainable source of Li is the main challenge to overcome \cite{Miatto2021}. Currently, operations in Latin America, Australia and China account for a large portion of the global Li supply. 
+In particular, one of the largest brine deposit sites in the world is Salar de Atacama site in Chile, producing $\sim~23\%$ of the global supply in 2019 \cite{Cabello2021}.
+However, tapping into these reserves via conventional mining techniques has severe consequences to the surrounding ecosystems. 
+
+To address these environmental concerns, Li-based membrane technologies have been developed which utilize lower concentration Li brine sources such as seawater. For example, electrodialysis techniques have been used for extracting Li from seawater brine using an E-field to drive the flow of ions across a selective membrane \cite{Jiang2014}. One concern with this approach is high energy costs when scaled up. Additionally, solvent extraction approaches where engineered ion-imprinted membranes capture Li with high selectivity have shown promise in the last few years as a viable method for Li extraction \cite{Cui2018}. However, these techniques require many solvents and organic chemicals along with higher material costs when scaled up. 
+
+Recently, a novel technique for Li extraction has been developed using principles of fluid mechanics, namely capillary action and evaporation \cite{Chen2023}. In this approach, porous strings made from wound cellulose fibers, called cellulose fiber crystallizers, are dipped into a brine source. This induces flow from the source via capillary action along with evaporation as the water climbs the crystallizer. Salts with higher concentrations and lower solubilities such as NaCl crystallize lower on the string compared to those with higher mobilities and lower concentrations such as LiCl. Therefore, different salts attain their saturation at different points on the cystallizer and thus precipitate sequentially. 
+
+In this work, we investigate the transport of Li and Na ions through this porous fiber crystallizer using similar experimental conditions found in \cite{Chen2023}. We compare our model results to those from \cite{Chen2023} and address any differences and limitations in our approach. 
+
+\section*{Numerical Methods}
+
+We use a one-dimensional tracer transport model to simulate the transport of Li and Na ions through the porous fibers of the string. The general form of the model from \cite{Chen2023} is given as,
+
+\begin{equation}
+\frac{\partial c}{\partial t} + \frac{\partial}{\partial z}\left[vc - D\frac{\partial c}{\partial z} \right] = 0
+\end{equation}
+where $c$ is the concentration of the Li or Na ion, $z$ is the position along the porous string, $D$ is the diffusivity and $v$ is the flow velocity. They obtain an expression derived from Darcy's equation for flow in a porous medium, 
+
+\begin{equation}
+    v(z) = v_0\left(1 - \frac{z}{H} \right)
+\end{equation}
+where the characteristic flow velocity $v_0 = 2jH/\rho R$. For this relationship, $j$ is the evaporation rate (ER), $H$ is the height of the water column, $\rho$ is the solution density, and $R$ is the radius of the string. 
+
+We first perform a scaling analysis on the following equation to extract its dimensionless form. We let $z = H\cdot z'$, $c=c_c\cdot c'$, and $t=T_c\cdot c'$ and obtain,
+
+\begin{equation}
+\frac{\partial c'}{\partial t'} + \frac{\partial}{\partial z'}\left[(1-z')c' - \frac{1}{\rm~Pe}\frac{\partial c'}{\partial z'} \right] = 0
+\label{eqn:tracer}
+\end{equation}
+where the effective P\'eclet Number is $\rm~Pe = Hv_0/D$. We discretize our system into $N=100$ cells along the length of the fiber crystallizer and use a forward Euler numerical integration scheme to solve Equation \ref{eqn:tracer}. We use a prescribed concentration as our boundary condition at $N=0$ where the string is dipped into our brine source along with a natural outflow condition at $N=100$. Since our flow is advection dominated, we use a fixed time step of, $dt = dx^2/v_0$ to satisfy the von Neumann stability criterion. For an arbitrary volume element $N=i$, the finite volume equation is given by, 
+
+\begin{equation}
+    \frac{C^{n+1}_i - C^n_i}{\delta t} + F^n_{i+1/2} - F^n_{i-1/2} = 0
+\end{equation}
+where $F = F^{\rm~diff} + F^{\rm~adv}$. For the prescribed boundary condition at $N=0$, we set $C = C(\rm~Li^{+})_0$ or $C = C(\rm~Na^{+})_0$. For the natural outflow boundary condition at $N=100$, we set $F^{\rm~adv} = v(H)\cdot C(H) = 0$ since there is no flow at the highest point of the water column. 
+
+Additionally, since Na is much closer to saturation than Li, it precipitates out of the solution earlier. After the characteristic time $(\rho rR)/2j\ln(C_{\rm~Na}^{\rm~sat}/C_{\rm~Na}^{\circ})$, $C_{\rm~Na}$ remains constant in the crystallizer \cite{Chen2023}. We find that at $22^\circ\rm~C$, $C_{\rm~Na}^{\rm~sat} = 263623\rm~ppm$\footnote{https://www.sigmaaldrich.com/US/en/support/calculators-and-apps/solubility-table-compounds-water-temperature}. In our time loop, we add a condition where we only update $C_{\rm~Na}$ if $t < \ln(C_{\rm~Na}^{\rm~sat}/C_{\rm~Na}^{\circ})$. This enables $C_{\rm~Li}$ to increase its relative concentration. 
+
+\section*{Results and Discussion}
+
+We adopt the Pe values $\rm~Pe = 529, 2647, 13235$ from \cite{Chen2023} since the flow is advection driven due to high ER. From Figure \ref{fig:adjust_PE}, we observe that on the basis on higher Pe, the relative concentration of Li increases at the top region of the crystallizer. This is because higher ER due to stronger winds for example increases Li selectivity.
+
+Additionally, we tested this Li extraction approach using two different initial concentrations as listed in \cite{Chen2023}. Their seawater composition was $ C(\rm~Li^{+})_0=0.18\rm~ppm$ and $C(\rm~Na^{+})_0=10,800\rm~ppm$, and their brine composition using the typical geothermal brine from Salar de Atacama site was $ C(\rm~Li^{+})_0=1500\rm~ppm$ and $C(\rm~Na^{+})_0=17600\rm~ppm$.  Figure \ref{fig:brine} shows the Li/Na concentration along with the Li concentration throughout the porous string at a few times. We observe that the relative concentration for Li increases roughly at the top 10\% of the crystallizer. This agrees with the experimental results from \cite{Chen2023} where they found high Li selectivity towards the top of the crystallizer. Also, Figure \ref{fig:sea} shows the Li/Na and Li concentrations using seawater throughout the porous string at a few times. Similar to the crystallizers dipped in the brine source, we observe an increase in Li concentration over time at roughly the top 10\% of the crystallizer. However, the relative concentrations between Li and Na is much less in this case due to a lower relative concentration of Li found in seawater versus the brine source. From these results, we see that for seawater this technique can selectively concentrate Li by $\sim80$ times. This makes it a versatile approach in extracting from brine sources with varying Li concentrations. 
+
+However, there are a few drawbacks to this current model worth addressing. Firstly, the 1D tracer transport equation does not include evaporation uniformly across the crystallizer. Additionally, we do not consider any precipitation of Li or Na in this model and thus don't account for the amount of crystallization occurring over time. Additionally, their experiments demonstrated that NaCl crystallized on the outer surface of the porous string while LiCl is concentrated towards the center. Implementing a radial coordinate in the tracer transport model will enable us to see the accumulation of different ionic species across the thickness of the crystallizer for comparison with their experimental results. 
+
+In conclusion, we used the 1D tracer transport model to simulate the flow of Li and Na through the porous cystallizers to demonstrate the high Li selectivity of this novel approach for Li extraction. As more consumer products continue to rely on Li as a power source, investigating novel Li extraction techniques is a priority to meet this demand. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=5cm]{figs/ME146/adjust_Pe.png}
+    \caption{Transport of Li/Na for different Pe values given initial concentrations from continental brine at Salar de Atacama Chile site.}
+    \label{fig:adjust_PE}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=10cm]{figs/ME146/conc_figs_brine.png}
+    \caption{Transport of Li/Na at different times with $\rm~Pe =529$ given initial concentrations from continental brine at Salar de Atacama Chile site.}
+    \label{fig:brine}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=10cm]{figs/ME146/conc_figs_seawater.png}
+    \caption{Transport of Li/Na at different times with $\rm~Pe =529$ given initial concentrations from seawater.}
+    \label{fig:sea}
+\end{figure}
+
+
+
+
+
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=15cm]{figs/ME146/concentration_figs.png}
+%     \caption{Left: }
+%     \label{fig:Li-Na-conc}
+% \end{figure}
+
+
+
+\clearpage
+\printbibliography
+%\bibliography{ME146}
+
+\end{document}
+ 
